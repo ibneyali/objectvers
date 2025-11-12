@@ -157,8 +157,19 @@ public class EmployeeJSONComparatorTest {
     @Test
     @DisplayName("Test 4: Type Changes")
     public void testTypeChanges() {
-        String json1 = "{\"age\": \"25\", \"active\": true, \"count\": 100}";
-        String json2 = "{\"age\": 25, \"active\": \"true\", \"count\": \"100\"}";
+        // Add type change properties to empV0 and empV1
+        JsonObject json1 = gson.fromJson(empV0, JsonObject.class);
+        JsonObject json2 = gson.fromJson(empV1, JsonObject.class);
+
+        // Add properties with different types
+        json1.addProperty("age", "25");  // String in v0
+        json2.addProperty("age", 25);     // Number in v1
+
+        json1.addProperty("active", true);   // Boolean in v0
+        json2.addProperty("active", "true"); // String in v1
+
+        json1.addProperty("count", 100);    // Number in v0
+        json2.addProperty("count", "100");  // String in v1
 
         JSONComparator comparator = new JSONComparator();
         JsonObject result = comparator.compare(json1, json2);
@@ -193,8 +204,19 @@ public class EmployeeJSONComparatorTest {
     @Test
     @DisplayName("Test 5: Null and Boolean Values")
     public void testNullAndBooleanValues() {
-        String json1 = "{\"name\": \"John\", \"middleName\": null, \"isActive\": true, \"isVerified\": false}";
-        String json2 = "{\"name\": \"John\", \"middleName\": \"Smith\", \"isActive\": false, \"isVerified\": false}";
+        // Add null and boolean properties to empV0 and empV1
+        JsonObject json1 = gson.fromJson(empV0, JsonObject.class);
+        JsonObject json2 = gson.fromJson(empV1, JsonObject.class);
+
+        // Add properties for null and boolean testing
+        json1.add("middleName", null);  // Null in v0
+        json2.addProperty("middleName", "Smith");  // String in v1
+
+        json1.addProperty("isActive", true);   // true in v0
+        json2.addProperty("isActive", false);  // false in v1
+
+        json1.addProperty("isVerified", false);  // false in both
+        json2.addProperty("isVerified", false);
 
         JSONComparator comparator = new JSONComparator();
         JsonObject result = comparator.compare(json1, json2);
@@ -227,39 +249,61 @@ public class EmployeeJSONComparatorTest {
     @Test
     @DisplayName("Test 6: Complex Real-World API Response")
     public void testComplexRealWorldSenario() {
-        String json1 = "{"
-                + "\"status\": \"success\","
-                + "\"data\": {"
-                + "  \"user\": {"
-                + "    \"id\": 123,"
-                + "    \"name\": \"Alice\","
-                + "    \"email\": \"alice@example.com\","
-                + "    \"roles\": [\"user\", \"admin\"]"
-                + "  },"
-                + "  \"permissions\": [\"read\", \"write\"]"
-                + "},"
-                + "\"metadata\": {"
-                + "  \"timestamp\": \"2025-11-12T10:00:00Z\","
-                + "  \"version\": \"1.0\""
-                + "}"
-                + "}";
+        // Build complex API response using empV0 and empV1 as reference
+        JsonObject json1 = new JsonObject();
+        JsonObject json2 = new JsonObject();
 
-        String json2 = "{"
-                + "\"status\": \"success\","
-                + "\"data\": {"
-                + "  \"user\": {"
-                + "    \"id\": 123,"
-                + "    \"name\": \"Alice Smith\","
-                + "    \"email\": \"alice.smith@example.com\","
-                + "    \"roles\": [\"user\", \"admin\", \"superadmin\"]"
-                + "  },"
-                + "  \"permissions\": [\"read\", \"write\", \"delete\"]"
-                + "},"
-                + "\"metadata\": {"
-                + "  \"timestamp\": \"2025-11-12T11:00:00Z\","
-                + "  \"version\": \"1.1\""
-                + "}"
-                + "}";
+        // Add status
+        json1.addProperty("status", "success");
+        json2.addProperty("status", "success");
+
+        // Add data with nested user
+        JsonObject data1 = new JsonObject();
+        JsonObject user1 = new JsonObject();
+        user1.addProperty("id", 123);
+        user1.addProperty("name", "Alice");
+        user1.addProperty("email", "alice@example.com");
+        com.google.gson.JsonArray roles1 = new com.google.gson.JsonArray();
+        roles1.add("user");
+        roles1.add("admin");
+        user1.add("roles", roles1);
+        data1.add("user", user1);
+
+        com.google.gson.JsonArray permissions1 = new com.google.gson.JsonArray();
+        permissions1.add("read");
+        permissions1.add("write");
+        data1.add("permissions", permissions1);
+        json1.add("data", data1);
+
+        JsonObject data2 = new JsonObject();
+        JsonObject user2 = new JsonObject();
+        user2.addProperty("id", 123);
+        user2.addProperty("name", "Alice Smith");
+        user2.addProperty("email", "alice.smith@example.com");
+        com.google.gson.JsonArray roles2 = new com.google.gson.JsonArray();
+        roles2.add("user");
+        roles2.add("admin");
+        roles2.add("superadmin");
+        user2.add("roles", roles2);
+        data2.add("user", user2);
+
+        com.google.gson.JsonArray permissions2 = new com.google.gson.JsonArray();
+        permissions2.add("read");
+        permissions2.add("write");
+        permissions2.add("delete");
+        data2.add("permissions", permissions2);
+        json2.add("data", data2);
+
+        // Add metadata
+        JsonObject metadata1 = new JsonObject();
+        metadata1.addProperty("timestamp", "2025-11-12T10:00:00Z");
+        metadata1.addProperty("version", "1.0");
+        json1.add("metadata", metadata1);
+
+        JsonObject metadata2 = new JsonObject();
+        metadata2.addProperty("timestamp", "2025-11-12T11:00:00Z");
+        metadata2.addProperty("version", "1.1");
+        json2.add("metadata", metadata2);
 
         JSONComparator comparator = new JSONComparator();
         JsonObject result = comparator.compare(json1, json2);
@@ -295,9 +339,23 @@ public class EmployeeJSONComparatorTest {
     @Test
     @DisplayName("Test 7: Empty Structures" )
     public void testEmptyStructures() {
-        // Test empty objects
-        String json1 = "{\"data\": {}, \"items\": [], \"count\": 0}";
-        String json2 = "{\"data\": {\"name\": \"John\"}, \"items\": [\"item1\"], \"count\": 1}";
+        // Create test objects with empty structures using empV0/empV1 as base
+        JsonObject json1 = new JsonObject();
+        JsonObject json2 = new JsonObject();
+
+        // Add empty and populated structures
+        json1.add("data", new JsonObject());  // Empty object
+        JsonObject data2 = new JsonObject();
+        data2.addProperty("name", "John");
+        json2.add("data", data2);  // Object with property
+
+        json1.add("items", new com.google.gson.JsonArray());  // Empty array
+        com.google.gson.JsonArray items2 = new com.google.gson.JsonArray();
+        items2.add("item1");
+        json2.add("items", items2);  // Array with element
+
+        json1.addProperty("count", 0);
+        json2.addProperty("count", 1);
 
         JSONComparator comparator = new JSONComparator();
         JsonObject result = comparator.compare(json1, json2);
@@ -321,8 +379,12 @@ public class EmployeeJSONComparatorTest {
         assertEquals("item1", added.get("items[0]").getAsString());
 
         // Test comparison of identical empty structures
-        String json3 = "{\"data\": {}, \"items\": []}";
-        String json4 = "{\"data\": {}, \"items\": []}";
+        JsonObject json3 = new JsonObject();
+        JsonObject json4 = new JsonObject();
+        json3.add("data", new JsonObject());
+        json3.add("items", new com.google.gson.JsonArray());
+        json4.add("data", new JsonObject());
+        json4.add("items", new com.google.gson.JsonArray());
 
         JSONComparator comparator2 = new JSONComparator();
         JsonObject result2 = comparator2.compare(json3, json4);
@@ -340,46 +402,46 @@ public class EmployeeJSONComparatorTest {
     @Test
     @DisplayName("Test 8: Large Array Comparison" )
     public void testLargeArray() {
-        // Build large arrays programmatically
-        StringBuilder json1Builder = new StringBuilder("{\"numbers\": [");
-        StringBuilder json2Builder = new StringBuilder("{\"numbers\": [");
+        // Build large arrays programmatically using empV0/empV1 as reference
+        JsonObject json1 = new JsonObject();
+        JsonObject json2 = new JsonObject();
 
+        // Create large numbers array
+        com.google.gson.JsonArray numbers1 = new com.google.gson.JsonArray();
+        com.google.gson.JsonArray numbers2 = new com.google.gson.JsonArray();
         for (int i = 0; i < 100; i++) {
-            if (i > 0) {
-                json1Builder.append(", ");
-                json2Builder.append(", ");
-            }
-            json1Builder.append(i);
+            numbers1.add(i);
             // Change every 10th element in json2
             if (i % 10 == 0) {
-                json2Builder.append(i * 2);
+                numbers2.add(i * 2);
             } else {
-                json2Builder.append(i);
+                numbers2.add(i);
             }
         }
+        json1.add("numbers", numbers1);
+        json2.add("numbers", numbers2);
 
-        json1Builder.append("], \"users\": [");
-        json2Builder.append("], \"users\": [");
-
+        // Create users array with objects
+        com.google.gson.JsonArray users1 = new com.google.gson.JsonArray();
+        com.google.gson.JsonArray users2 = new com.google.gson.JsonArray();
         for (int i = 0; i < 10; i++) {
-            if (i > 0) {
-                json1Builder.append(", ");
-                json2Builder.append(", ");
-            }
-            json1Builder.append("{\"id\": ").append(i).append(", \"name\": \"User").append(i).append("\"}");
+            JsonObject user1 = new JsonObject();
+            user1.addProperty("id", i);
+            user1.addProperty("name", "User" + i);
+            users1.add(user1);
+
+            JsonObject user2 = new JsonObject();
+            user2.addProperty("id", i);
             // Change name for even indices
             if (i % 2 == 0) {
-                json2Builder.append("{\"id\": ").append(i).append(", \"name\": \"UpdatedUser").append(i).append("\"}");
+                user2.addProperty("name", "UpdatedUser" + i);
             } else {
-                json2Builder.append("{\"id\": ").append(i).append(", \"name\": \"User").append(i).append("\"}");
+                user2.addProperty("name", "User" + i);
             }
+            users2.add(user2);
         }
-
-        json1Builder.append("]}");
-        json2Builder.append("]}");
-
-        String json1 = json1Builder.toString();
-        String json2 = json2Builder.toString();
+        json1.add("users", users1);
+        json2.add("users", users2);
 
         JSONComparator comparator = new JSONComparator();
         JsonObject result = comparator.compare(json1, json2);
