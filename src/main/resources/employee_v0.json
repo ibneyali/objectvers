@@ -1,0 +1,30 @@
+{
+  "id": 1,
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "John@gmail.com",
+  "phone": "1234567",
+  "roles": ["Developer"],
+  "department": {
+    "id": 1,
+    "addressLine1": "123 Main",
+    "addressLine2": "Apt 4B",
+    "addressLine3": null,
+    "country": "United States",
+    "postalCode": "10001",
+    "createdTimestamp": "2025-11-03T00:44:18.667828",
+    "updatedTimestamp": "2025-11-03T00:44:18.667828",
+    "updatedBy": "SYSTEM"
+  },
+  "address": {
+    "id": 1,
+    "name": "Information",
+    "createdTimestamp": "2025-11-03T00:44:18.665827",
+    "updatedTimestamp": "2025-11-03T00:44:18.665827",
+    "updatedBy": "SYSTEM"
+  },
+  "createdTimestamp": "2025-11-03T00:47:59.177571",
+  "updatedTimestamp": "2025-11-03T00:48:37.68652",
+  "updatedBy": "System",
+  "version": 1
+}
